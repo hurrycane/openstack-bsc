@@ -13,13 +13,6 @@ class users::install {
         keyfiles => [ "bogdan.pub"]
     }
 
-    create_user { "stack":
-        uid      => 1002,
-        email    => "openstack@cadmio.org"
-        home     => "/opt/stack"
-        keyfiles => [ "bogdan.pub"]
-    }
-
     # Put pubkey files in place
     define user_keys {
         $key_content = file("/etc/puppet/modules/users/files/$name", "/dev/null")
