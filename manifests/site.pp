@@ -5,7 +5,7 @@ node default {
 	include sudo
 	include users
 
-	include mysql
+#	include mysql
 }
 
 # probably not a best practise
@@ -33,14 +33,14 @@ node "li266-215.members.linode.com" {
 	include monitoring
 }
 
-node "ip-10-58-111-96.eu-west-1.compute.internal" {
-	include nova-common
-	include nova-compute
-	include nova-scheduler
-	include nova-network
-	include nova-api
-	include openstackx
-
-	include keystone
-	include glance
-}
+#node "ip-10-58-111-96.eu-west-1.compute.internal" {
+#	include nova-common
+#	include nova-compute
+#	include nova-scheduler
+#	include nova-network
+#	include nova-api
+#	include openstackx
+#
+#	include keystone
+#	include glance
+#}
