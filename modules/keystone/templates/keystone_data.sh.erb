@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Tenants
+keystone-manage tenant add admin
+keystone-manage tenant add demo
+keystone-manage tenant add invisible_to_admin
+
+# Users
+keystone-manage user add admin <%= cluster_password %>
+keystone-manage user add demo <%= cluster_password %>
+
+# Roles
+keystone-manage role add Admin
+keystone-manage role add Member
+keystone-manage role add KeystoneAdmin
+keystone-manage role add KeystoneServiceAdmin
+keystone-manage role add sysadmin
+keystone-manage role add netadmin
+keystone-manage role grant Admin admin admin
+keystone-manage role grant Member demo demo
+keystone-manage role grant sysadmin demo demo
+keystone-manage role grant netadmin demo demo
+keystone-manage role grant Member demo invisible_to_admin
+keystone-manage role grant Admin admin demo
+keystone-manage role grant Admin admin
+keystone-manage role grant KeystoneAdmin admin
+keystone-manage role grant KeystoneServiceAdmin admin
+
+# Services
+keystone-manage service add nova compute "Nova Compute Service"
+keystone-manage service add ec2 ec2 "EC2 Compatability Layer"
+keystone-manage service add glance image "Glance Image Service"
+keystone-manage service add keystone identity "Keystone Identity Service"
+
+keystone-manage service add swift object-store "Swift Service"
+
+#endpointTemplates
+keystone-manage endpointTemplates add RegionOne nova http://<%= controller_node_ip %>:8774/v1.1/%tenant_id% http://<%= controller_node_ip %>:8774/v1.1/%tenant_id%  http://<%= controller_node_ip %>:8774/v1.1/%tenant_id% 1 1
+keystone-manage endpointTemplates add RegionOne ec2 http://<%= controller_node_ip %>:8773/services/Cloud http://<%= controller_node_ip %>:8773/services/Admin http://<%= controller_node_ip %>:8773/services/Cloud 1 1
+keystone-manage endpointTemplates add RegionOne glance http://<%= controller_node_ip %>:9292/v1.1/%tenant_id% http://<%= controller_node_ip %>:9292/v1.1/%tenant_id% http://<%= controller_node_ip %>:9292/v1.1/%tenant_id% 1 1
+keystone-manage endpointTemplates add RegionOne keystone http://<%= controller_node_ip %>:5000/v2.0 http://<%= controller_node_ip %>:35357/v2.0 http://<%= controller_node_ip %>:5000/v2.0 1 1
+keystone-manage endpointTemplates add RegionOne swift http://<%= controller_node_ip %>:8080/v1/AUTH_%tenant_id% http://<%= controller_node_ip %>:8080/ http://<%= controller_node_ip %>:8080/v1/AUTH_%tenant_id% 1 1
+
+
+# Tokens
+keystone-manage token add <%= service_token %> admin admin 2015-02-05T00:00
+
+# EC2 related creds - note we are setting the secret key to ADMIN_PASSWORD
+# but keystone doesn't parse them - it is just a blob from keystone's
+# point of view
+keystone-manage credentials add admin EC2 'admin' '<%= cluster_password %>' admin || echo "no support for adding credentials"
+keystone-manage credentials add demo EC2 'demo' '<%= cluster_password %>' demo || echo "no support for adding credentials"

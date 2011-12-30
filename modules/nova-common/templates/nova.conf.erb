@@ -1,0 +1,66 @@
+# adapted from original puppet nova.conf.erb template
+--use_deprecated_auth
+
+# from OSinstall.sh
+--daemonize=1
+
+# both
+--dhcpbridge_flagfile=/etc/nova/nova.conf
+--dhcpbridge=/usr/bin/nova-dhcpbridge
+--logdir=/var/log/nova
+--state_path=/var/lib/nova
+--state_path=/var/lib/nova
+--lock_path=/var/lock/nova
+
+# both
+--verbose
+
+--allow_admin_api
+--scheduler_driver=nova.scheduler.simple.SimpleScheduler
+
+--network_manager=nova.network.manager.FlatDHCPManager
+
+--libvirt_type=<%= libvirt_type %>
+
+--sql_connection=mysql://root:<%= mysql_password %>@<%= controller_node_ip %>/nova
+
+--s3_host=<%= controller_node_ip %>
+
+--rabbit_host=<%= controller_node_ip %>
+
+--ec2_host=<%= controller_node_ip %>
+--ec2_dmz_host=<%= controller_node_ip %>
+--ec2_url=http://<%= controller_node_ip %>:8773/services/Cloud
+
+--fixed_range=<%= fixed_range %>
+
+# --network_size=${NETWORK_SIZE}
+
+--num_networks=1
+
+# donno?
+--FAKE_subdomain=ec2
+
+# both
+--public_interface=eth0
+
+# glance
+--glance_host=<%= controller_node_ip %>
+--image_service=nova.image.glance.GlanceImageService
+--glance_api_servers=<%= controller_node_ip %>:9292
+
+# stack
+--force_dhcp_release
+
+#--vlan_start=${VLAN_START}
+#--vlan_interface=${PRIVATE_INTERFACE}
+--public_interface=eth0
+--vlan_interface=eth0
+
+--osapi_extension=nova.api.openstack.v2.contrib.standard_extensions
+--osapi_extension=extensions.admin.Admin
+
+--api_paste_config=/etc/nova/nova-api-paste.ini
+
+--flat_network_bridge=br100
+--flat_interface=eth0
