@@ -2,9 +2,6 @@ $ntpservers = [ "0.debian.pool.ntp.org", "1.debian.pool.ntp.org", "2.debian.pool
 
 $monitored_nodes = [ { "name" => "node1.test.cadmio.org", "ip" => "46.137.48.255" } ]
 
-# probably not a best practise
-$monitored_nodes = [ { "name" => "node1.test.cadmio.org", "ip" => "46.137.48.255" } ]
-
 # host on which the munin master is located
 $monitoring_host = "178.79.146.215"
 
@@ -26,17 +23,24 @@ node default {
 	include ntp
 	include sudo
 	include users
-
+  include git
 #	include mysql
 }
 
 class openstack-base-node {
+  include users
+
   create_user { "stack":
     uid      => 1002,
-    email    => "openstack@cadmio.org"
+    email    => "openstack@cadmio.org",
     home     => "/opt/stack",
-    keyfiles => [ "bogdan.pub"]
+    keyfiles => [ "openstack.pub"]
   }
+}
+
+node "ip-10-58-237-10.eu-west-1.compute.internal" {
+  include openstack-base-node
+  include mysql
 }
 
 #node "ip-10-58-111-96.eu-west-1.compute.internal" {
