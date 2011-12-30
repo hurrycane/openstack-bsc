@@ -36,9 +36,11 @@ class openstack-base-node {
     home     => "/opt/stack",
     keyfiles => [ "openstack.pub"]
   }
+
+  include nova
 }
 
-node "ip-10-58-237-10.eu-west-1.compute.internal" {
+node "ip-10-57-5-38.eu-west-1.compute.internal" {
   include openstack-base-node
   include mysql
 }
