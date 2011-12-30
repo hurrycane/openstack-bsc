@@ -40,7 +40,7 @@
             path            => "/bin:/usr/bin",
             refreshonly     => true,
             subscribe       => User[$username],
-            unless          => "cat /etc/shadow | grep $username| cut -f 2 -d : | grep -v '!'",
+            unless          => "cat /etc/shadow | grep $username | cut -f 2 -d : | grep -v '!'",
             require         => [Class["tools"],User[$username]]
         }
 
@@ -69,3 +69,56 @@
         }
     } # create_user
 
+define git::clone(   $source,
+                $localtree = "/opt/stack/",
+                $real_name = false,
+                $branch = false) {
+    if $real_name {
+        $_name = $real_name
+    }
+    else {
+        $_name = $name
+    }
+    
+    exec { "git_clone_exec_$localtree/$_name":
+        path => "/bin:/usr/bin",
+        cwd => $localtree,
+        command => "git clone $source $_name",
+        unless => "test -d $localtree/$_name",
+        timeout => 0
+    }
+
+    case $branch {
+        false: {}
+        default: {
+            exec { "git_clone_checkout_$branch_$localtree/$_name":
+                path            => "/bin:/usr/bin",
+                cwd => "$localtree",
+                command => "git checkout --track -b $branch origin/$branch",
+                unless => "test -d $localtree/$_name",
+                timeout => 0
+            }
+        }
+    }
+}
+
+define pip($ensure = installed) {
+    case $ensure {
+        installed: {
+            exec { "pip install $name":
+                path => "/usr/local/bin:/usr/bin:/bin",
+                environment => "PIP_DOWNLOAD_CACHE=/var/cache/pip"
+            }
+        }
+        latest: {
+            exec { "pip install --upgrade $name":
+                path => "/usr/local/bin:/usr/bin:/bin",
+            }
+        }
+        default: {
+            exec { "pip install $name==$ensure":
+                path => "/usr/local/bin:/usr/bin:/bin",
+            }
+        }
+    }
+}
