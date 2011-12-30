@@ -7,8 +7,16 @@ class users::install {
 
     # Create users
     create_user { "bogdan":
-        uid     => 1001,
-        email   => "bogdan.gaza@yahoo.com",
+        uid      => 1001,
+        email    => "bogdan.gaza@yahoo.com",
+        home     => "/home/bogdan",
+        keyfiles => [ "bogdan.pub"]
+    }
+
+    create_user { "stack":
+        uid      => 1002,
+        email    => "openstack@cadmio.org"
+        home     => "/opt/stack"
         keyfiles => [ "bogdan.pub"]
     }
 
@@ -37,17 +45,25 @@ class users::install {
     } # user_keys
 
     # Create user accounts
-    define create_user($uid, $email, $keyfiles) {
+    define create_user($uid, $email, $home, $keyfiles) {
         $username = $title
 
         user { $username:
             ensure      => present,
             uid         => $uid,
             comment     => $email,
-            home        => "/home/$username",
+            home        => $home,
             shell       => "/bin/bash",
             managehome  => true,
             groups      => "wheel",
+        }
+      
+        exec { "/opt/tools/setuserpassword $uid":
+            path            => "/bin:/usr/bin",
+            refreshonly     => true,
+            subscribe       => user[$uid],
+            unless          => "cat /etc/shadow | grep $uid| cut -f 2 -d : | grep -v '!'",
+            require         => Class["tools"]
         }
 
         group { $username:
@@ -55,7 +71,7 @@ class users::install {
             require     => User[$username]
         }
 
-        file { "/home/$username/":
+        file { $home :
             ensure      => directory,
             owner       => $username,
             group       => $username,
@@ -63,17 +79,15 @@ class users::install {
             require     => [ User[$username], Group[$username] ]
         }
 
-        file { "/home/$username/.ssh":
+        file { "$home/.ssh":
             ensure      => directory,
             owner       => $username,
             group       => $username,
             mode        => 700,
-            require     => File["/home/$username/"]
+            require     => File["$home"]
         }
 
         user_keys { $keyfiles: }
     } # create_user
-
-
 
 }
