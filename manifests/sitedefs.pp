@@ -40,7 +40,7 @@ class openstack-base-node {
   include nova
 }
 
-node "ip-10-57-5-38.eu-west-1.compute.internal" {
+node "ip-10-250-189-247.eu-west-1.compute.internal" {
   include openstack-base-node
   include mysql
 }
