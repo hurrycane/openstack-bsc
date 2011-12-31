@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+# Helper to clean iptables rules
+function clean_iptables() {
+    # Delete rules
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-A" |  sed "s/-A/-D/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat rules
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-A" | sed "s/-A/-D/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+    # Delete chains
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-N" |  sed "s/-N/-X/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat chains
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-N" | sed "s/-N/-X/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+}
+
+INSTANCE_NAME_PREFIX=${INSTANCE_NAME_PREFIX:-instance-}
+
+clean_iptables
+
+instances=`virsh list | grep $INSTANCE_NAME_PREFIX | cut -d " " -f3`
+if [ ! $instances = "" ]; then
+  echo $instances | xargs -n1 virsh destroy
+  echo $instances | xargs -n1 virsh undefine
+fi
+
+# Clean out the instances directory.
+sudo rm -rf /opt/stack/nova/instances/*

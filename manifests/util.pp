@@ -109,7 +109,8 @@ define pip($ensure = installed) {
             exec { "pip install $name":
                 path => "/usr/local/bin:/usr/bin:/bin",
                 environment => "PIP_DOWNLOAD_CACHE=/var/cache/pip",
-                logoutput => on_failure
+                logoutput => on_failure,
+                unless => "pip freeze | grep \"$name\""
             }
         }
         latest: {

@@ -22,4 +22,12 @@ class tools::install {
     source => "puppet:///tools/setuserpassword"
   }
 
+  file { '/opt/tools/clean_iptables' :
+    ensure => present,
+    owner => "root",
+    group => "root",
+    mode => 0511,
+    source => "puppet:///tools/clean_iptables"
+  }
+
 }
