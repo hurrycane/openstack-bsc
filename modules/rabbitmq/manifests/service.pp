@@ -1,5 +1,5 @@
 class rabbitmq::service {
-  service { "rabbitmq":
+  service { "rabbitmq-server":
     ensure => running,
     enable => true,
     hasstatus => true,
