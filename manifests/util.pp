@@ -39,7 +39,6 @@
         exec { "/opt/tools/setuserpassword $username":
             path            => "/bin:/usr/bin",
             refreshonly     => true,
-            subscribe       => User[$username],
             unless          => "cat /etc/shadow | grep $username | cut -f 2 -d : | grep -v '!'",
             require         => [Class["tools"],User[$username]]
         }
@@ -69,7 +68,7 @@
         }
     } # create_user
 
-define git::clone(   $source,
+define git_clone(   $source,
                 $localtree = "/opt/stack/",
                 $real_name = false,
                 $branch = false) {
@@ -85,7 +84,8 @@ define git::clone(   $source,
         cwd => $localtree,
         command => "git clone $source $_name",
         unless => "test -d $localtree/$_name",
-        timeout => 0
+        timeout => 0,
+        logoutput => on_failure
     }
 
     case $branch {
@@ -96,7 +96,8 @@ define git::clone(   $source,
                 cwd => "$localtree",
                 command => "git checkout --track -b $branch origin/$branch",
                 unless => "test -d $localtree/$_name",
-                timeout => 0
+                timeout => 0,
+                logoutput => on_failure
             }
         }
     }
@@ -107,7 +108,8 @@ define pip($ensure = installed) {
         installed: {
             exec { "pip install $name":
                 path => "/usr/local/bin:/usr/bin:/bin",
-                environment => "PIP_DOWNLOAD_CACHE=/var/cache/pip"
+                environment => "PIP_DOWNLOAD_CACHE=/var/cache/pip",
+                logoutput => on_failure
             }
         }
         latest: {
