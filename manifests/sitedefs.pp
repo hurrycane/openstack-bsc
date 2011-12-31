@@ -38,6 +38,7 @@ class openstack-base-node {
   }
 
   include nova
+  include nova-compute
 }
 
 node "ip-10-250-189-247.eu-west-1.compute.internal" {

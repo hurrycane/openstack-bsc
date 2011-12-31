@@ -14,6 +14,6 @@ class nova-compute::service {
     enable      => true,
     hasrestart  => true,
     require     => Package['libvirt-bin'],
-    subscribe   => File["/etc/default/libvirt-bin"],
+#    subscribe   => File["/etc/default/libvirt-bin"],
   }
 }
