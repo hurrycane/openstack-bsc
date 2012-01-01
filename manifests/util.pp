@@ -93,8 +93,9 @@ define git_clone(   $source,
         default: {
             exec { "git_clone_checkout_$branch_$localtree/$_name":
                 path            => "/bin:/usr/bin",
-                cwd => "$localtree",
+                cwd => "$localtree/$_name",
                 command => "git checkout --track -b $branch origin/$branch",
+                tries => 2,
                 unless => "test -d $localtree/$_name",
                 timeout => 0,
                 logoutput => on_failure
@@ -104,12 +105,14 @@ define git_clone(   $source,
 }
 
 define pip($ensure = installed) {
+    require "git"
     case $ensure {
         installed: {
             exec { "pip install $name":
                 path => "/usr/local/bin:/usr/bin:/bin",
                 environment => "PIP_DOWNLOAD_CACHE=/var/cache/pip",
                 logoutput => on_failure,
+                require => Class["git"],
                 unless => "pip freeze | grep \"$name\""
             }
         }
