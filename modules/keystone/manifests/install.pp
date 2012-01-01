@@ -1,39 +1,33 @@
 class keystone::install {
-  require "apache"
-  require "mysql"
 
-  package { "keystone":
-    ensure => latest,
-    notify => [Service["apache2"], Service["nova-api"]],
-    require => [
-      Package["nova-common"]
-    ]
+  git_clone { "keystone" :
+    source    => "https://github.com/openstack/keystone.git",
+    real_name => "keystone",
+    localtree => "/opt/stack",
+    branch    => "stable/diablo"
   }
 
   file { "keystone.conf":
-    path => "/etc/keystone/keystone.conf",
+    path => "/opt/stack/keystone/etc/keystone.conf",
     ensure  => present,
-    owner   => "keystone",
     mode    => 0600,
     content => template("keystone/keystone.conf.erb"),
-    notify => Service["keystone"],
-    require => Package["keystone"]
+    #notify => Service["keystone"],
+    require => Git_clone["keystone"]
   }
 
   file { "keystone_data.sh":
-    path => "/var/lib/keystone/keystone_data.sh",
+    path => "/opt/stack/keystone/bin/keystone_data.sh",
     ensure  => present,
     mode    => 0700,
     content => template("keystone/keystone_data.sh.erb"),
-    require => Package["keystone"],
-    notify => [ Exec["create_keystone_db"], Service["keystone"] ]
+    require => Git_clone["keystone"]
   }
 
 
   exec { "create_keystone_db":
     command     => "mysql -uroot -p${mysql_password} -e 'DROP DATABASE IF EXISTS keystone; CREATE DATABASE keystone;'",
-    path        => [ "/bin", "/usr/bin" ],
-    require => [Service['mysql']]
+    path        => [ "/bin", "/usr/bin" ]
   }
 
   # this is all totally brute force
@@ -46,13 +40,14 @@ class keystone::install {
   #}
 
   exec { "create_keystone_data":
-    command     => "/var/lib/keystone/keystone_data.sh",
+    command     => "/opt/stack/keystone/bin/keystone_data.sh",
     path        => [ "/bin", "/usr/bin" ],
     require     => [
-      Package['keystone'],
+      Git_clone["keystone"],
       File['keystone.conf'],
       File["keystone_data.sh"]
-    ]
+    ],
+    cwd         => '/opt/stack/keystone/bin'
   }
 
 }

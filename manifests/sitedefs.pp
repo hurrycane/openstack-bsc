@@ -38,6 +38,7 @@ class openstack-base-node {
   }
 
   include nova
+  include keystone
   include nova-compute
   include nova-api
   include nova-volumes

@@ -97,6 +97,7 @@ define git_clone(   $source,
                 command => "git checkout --track -b $branch origin/$branch",
                 tries => 2,
                 unless => "test -d $localtree/$_name",
+                require => Exec["git_clone_exec_$localtree/$_name"],
                 timeout => 0,
                 logoutput => on_failure
             }
