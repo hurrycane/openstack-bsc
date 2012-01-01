@@ -19,6 +19,16 @@ class nova::install {
     branch    => "master"
   }
 
+  file { "/opt/stack/nova/bin/nova.conf":
+    ensure  => present,
+    owner   => "stack",
+    group   => "stack",
+    mode    => 0660,
+    content => template("nova/nova.conf.erb"),
+    require => Git_clone["nova-client"]
+  }
+
+
   exec { "python-install-nova-client":
     path => "/usr/local/bin:/usr/bin:/bin",
     cwd => "/opt/stack/python-novaclient",

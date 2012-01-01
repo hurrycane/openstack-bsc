@@ -27,6 +27,16 @@ node default {
 #	include mysql
 }
 
+class nova-base {
+  include nova
+  include nova-compute
+  include nova-api
+  include nova-volumes
+  include nova-network
+  include nova-scheduler
+
+}
+
 class openstack-base-node {
   include users
 
@@ -37,13 +47,10 @@ class openstack-base-node {
     keyfiles => [ "openstack.pub"]
   }
 
-  include nova
+  include nova-base
   include keystone
   include glance
-  include nova-compute
-  include nova-api
-  include nova-volumes
-  include nova-network
+  include openstackx
 }
 
 node "ip-10-59-62-96.eu-west-1.compute.internal" {
