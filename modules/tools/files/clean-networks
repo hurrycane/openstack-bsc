@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+DEST=${DEST:-/opt/stack}
+NOVA_DIR=$DEST/nova
+
+function clean_iptables() {
+    # Delete rules
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-A" |  sed "s/-A/-D/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat rules
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-A" | sed "s/-A/-D/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+    # Delete chains
+    sudo iptables -S -v | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" | grep "\-N" |  sed "s/-N/-X/g" | awk '{print "sudo iptables",$0}' | bash
+    # Delete nat chains
+    sudo iptables -S -v -t nat | sed "s/-c [0-9]* [0-9]* //g" | grep "nova" |  grep "\-N" | sed "s/-N/-X/g" | awk '{print "sudo iptables -t nat",$0}' | bash
+}
+
+
+    sudo killall dnsmasq || true
+    clean_iptables
+    rm -rf $NOVA_DIR/networks
+    mkdir -p $NOVA_DIR/networks
+
+

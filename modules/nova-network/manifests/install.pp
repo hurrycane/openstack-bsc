@@ -1,8 +1,8 @@
 class nova-network::install {
-
-  package { "nova-network":
-    ensure => latest
+  exec { "clean-networks" :
+    command => "/opt/tools/clean-networks",
+    path => "/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin",
+    logoutput => on_failure,
+    require => [Package["dnsmasq-base"],Class["nova"],Class["nova-common"]]
   }
-
 }
-  

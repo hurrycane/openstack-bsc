@@ -30,4 +30,20 @@ class tools::install {
     source => "puppet:///tools/clean_iptables"
   }
 
+  file { '/opt/tools/clean-volume-groups' :
+    ensure => present,
+    owner => "root",
+    group => "root",
+    mode => 0511,
+    source => "puppet:///tools/clean-volume-groups"
+  }
+
+  file { '/opt/tools/clean-networks' :
+    ensure => present,
+    owner => "root",
+    group => "root",
+    mode => 0511,
+    source => "puppet:///tools/clean-networks"
+  }
+
 }
