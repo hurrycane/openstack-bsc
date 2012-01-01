@@ -11,7 +11,7 @@ class nova-compute::install {
     command => "usermod -a -G libvirtd stack",
     path => "/usr/local/bin:/usr/bin:/bin:/sbin:/usr/sbin",
     logoutput => on_failure,
-    require => Class["nova"],
+    require => [Class["nova"],Class["nova-common"],Package["libvirt-bin"]],
     notify => Service["libvirt-bin"]
   }
 
