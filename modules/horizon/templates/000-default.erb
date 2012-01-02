@@ -1,0 +1,29 @@
+<VirtualHost *:80>
+    WSGIScriptAlias / /opt/stack/horizon/openstack-dashboard/dashboard/wsgi/django.wsgi
+    WSGIDaemonProcess horizon user=stack group=stack processes=3 threads=10
+    SetEnv APACHE_RUN_USER stack
+    SetEnv APACHE_RUN_GROUP stack
+    WSGIProcessGroup horizon
+
+    DocumentRoot /opt/stack/horizon/.blackhole/
+    Alias /media /opt/stack/horizon/openstack-dashboard/dashboard/static
+    Alias /vpn /opt/stack/vpn
+
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    <Directory "/opt/stack/horizon" >
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    ErrorLog /var/log/apache2/error.log
+    LogLevel warn
+    CustomLog /var/log/apache2/access.log combined
+</VirtualHost>
+
+
