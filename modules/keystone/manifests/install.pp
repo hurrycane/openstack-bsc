@@ -18,6 +18,21 @@ class keystone::install {
     require => Git_clone["keystone"]
   }
 
+  exec { "python-install-keystone":
+    path => "/usr/local/bin:/usr/bin:/bin",
+    cwd => "/opt/stack/keystone",
+    command => "python setup.py develop",
+    timeout => 0,
+    require => [
+      Class["nova::packages"],
+      Git_clone["keystone"],
+      Class["nova"]
+    ],
+    logoutput => on_failure
+  }
+
+
+
   file { "keystone_data.sh":
     path => "/opt/stack/keystone/bin/keystone_data.sh",
     ensure  => present,

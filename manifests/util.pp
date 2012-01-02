@@ -78,11 +78,15 @@ define git_clone(   $source,
     else {
         $_name = $name
     }
+
+    if !$branch {
+      $branch = "master"
+    }
     
     exec { "git_clone_exec_$localtree/$_name":
         path => "/bin:/usr/bin",
         cwd => $localtree,
-        command => "git clone $source $_name",
+        command => "git clone -b $branch $source $_name",
         user => "stack",
         group => "stack",
         unless => "test -d $localtree/$_name",
@@ -90,23 +94,6 @@ define git_clone(   $source,
         logoutput => on_failure
     }
 
-    case $branch {
-        false: {}
-        default: {
-            exec { "git_clone_checkout_$branch_$localtree/$_name":
-                path            => "/bin:/usr/bin",
-                cwd => "$localtree/$_name",
-                command => "git checkout --track -b $branch origin/$branch",
-                tries => 2,
-                unless => "test -d $localtree/$_name",
-                user => "stack",
-                group => "stack",
-                require => Exec["git_clone_exec_$localtree/$_name"],
-                timeout => 0,
-                logoutput => on_failure
-            }
-        }
-    }
 }
 
 define pip($ensure = installed) {

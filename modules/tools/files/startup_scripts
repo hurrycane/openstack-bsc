@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+
+SERVICE_TIMEOUT=${SERVICE_TIMEOUT:-60}
+
+DEST=${DEST:-/opt/stack}
+
+NOVA_DIR=$DEST/nova
+HORIZON_DIR=$DEST/horizon
+GLANCE_DIR=$DEST/glance
+KEYSTONE_DIR=$DEST/keystone
+NOVACLIENT_DIR=$DEST/python-novaclient
+OPENSTACKX_DIR=$DEST/openstackx
+
+FIXED_RANGE=${FIXED_RANGE:-10.0.0.0/24}
+FIXED_NETWORK_SIZE=${FIXED_NETWORK_SIZE:-256}
+FLOATING_RANGE=${FLOATING_RANGE:-172.24.4.224/28}
+
+HOST_IP=`LC_ALL=C /sbin/ifconfig eth0 | grep -m 1 'inet addr:'| cut -d: -f2 | awk '{print $1}'`
+GLANCE_HOSTPORT=${GLANCE_HOSTPORT:-$HOST_IP:9292}
+
+function screen_it {
+    NL=`echo -ne '\015'`
+    screen -S stack -X screen -t $1
+    # sleep to allow bash to be ready to be send the command - we are
+    # creating a new window in screen and then sends characters, so if
+    # bash isn't running by the time we send the command, nothing happens
+    sleep 1
+    screen -S stack -p $1 -X stuff "$2$NL"
+}
+
+/opt/stack/nova/bin/nova-manage db sync
+mkdir /opt/stack/nova/instances
+
+# create a new named screen to run processes in
+screen -d -m -S stack -t stack
+sleep 1
+# set a reasonable statusbar
+screen -r stack -X hardstatus alwayslastline "%-Lw%{= BW}%50>%n%f* %t%{-}%+Lw%< %= %H"
+
+
+screen_it g-reg "cd $GLANCE_DIR; bin/glance-registry --config-file=etc/glance-registry.conf"
+
+screen_it g-api "cd $GLANCE_DIR; bin/glance-api --config-file=etc/glance-api.conf"
+
+if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget -q -O- http://$GLANCE_HOSTPORT; do sleep 1; done"; then
+  echo "g-api did not start"
+  exit 1
+fi
+
+screen_it key "cd $KEYSTONE_DIR && $KEYSTONE_DIR/bin/keystone --config-file $KEYSTONE_CONF -d"
+echo "Waiting for keystone to start..."
+if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget -q -O- http://127.0.0.1:5000; do sleep 1; done"; then
+  echo "keystone did not start"
+  exit 1
+fi
+
+screen_it n-api "cd $NOVA_DIR && $NOVA_DIR/bin/nova-api"
+echo "Waiting for nova-api to start..."
+if ! timeout $SERVICE_TIMEOUT sh -c "while ! wget -q -O- http://127.0.0.1:8774; do sleep 1; done"; then
+  echo "nova-api did not start"
+  exit 1
+fi
+
+$NOVA_DIR/bin/nova-manage network create private $FIXED_RANGE 1 $FIXED_NETWORK_SIZE
+# create some floating ips
+$NOVA_DIR/bin/nova-manage floating create $FLOATING_RANGE
+
+# Launching nova-compute should be as simple as running ``nova-compute`` but
+# have to do a little more than that in our script.  Since we add the group
+# ``libvirtd`` to our user in this script, when nova-compute is run it is
+# within the context of our original shell (so our groups won't be updated).
+# Use 'sg' to execute nova-compute as a member of the libvirtd group.
+screen_it n-cpu "cd $NOVA_DIR && sg libvirtd $NOVA_DIR/bin/nova-compute"
+screen_it n-vol "cd $NOVA_DIR && $NOVA_DIR/bin/nova-volume"
+screen_it n-net "cd $NOVA_DIR && $NOVA_DIR/bin/nova-network"
+screen_it n-sch "cd $NOVA_DIR && $NOVA_DIR/bin/nova-scheduler"
+
+#screen_it horizon "cd $HORIZON_DIR && sudo tail -f /var/log/apache2/error.log"

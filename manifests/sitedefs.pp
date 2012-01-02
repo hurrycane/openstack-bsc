@@ -47,13 +47,15 @@ class openstack-base-node {
     keyfiles => [ "openstack.pub"]
   }
 
+  include apache
   include nova-base
   include keystone
   include glance
   include openstackx
+  include horizon
 }
 
-node "ip-10-58-238-18.eu-west-1.compute.internal" {
+node "ip-10-250-190-145.eu-west-1.compute.internal" {
   include openstack-base-node
   include mysql
 }

@@ -46,4 +46,14 @@ class tools::install {
     source => "puppet:///tools/clean-networks"
   }
 
+  file { '/opt/tools/startup_scripts' :
+    ensure => present,
+    owner => "root",
+    group => "root",
+    mode => 0511,
+    source => "puppet:///tools/startup_scripts"
+  }
+
+
+
 }

@@ -16,6 +16,19 @@ class glance::install {
     branch    => "master",
   }
 
+  exec { "python-install-glance":
+    path => "/usr/local/bin:/usr/bin:/bin",
+    cwd => "/opt/stack/glance",
+    command => "python setup.py develop",
+    timeout => 0,
+    require => [
+      Class["nova::packages"],
+      Git_clone["glance"],
+      Class["nova"]
+    ],
+    logoutput => on_failure
+  }
+
   file { "glance-api.conf":
     path => "/opt/stack/glance/etc/glance-api.conf",
     ensure  => present,
