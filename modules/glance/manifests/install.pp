@@ -20,6 +20,8 @@ class glance::install {
     path => "/opt/stack/glance/etc/glance-api.conf",
     ensure  => present,
     mode    => 0600,
+    owner   => "stack",
+    group   => "stack",
     content => template("glance/glance-api.conf.erb"),
     require => Git_clone["glance"]
   }
@@ -28,6 +30,8 @@ class glance::install {
     path => "/opt/stack/glance/etc/glance-registry.conf",
     ensure  => present,
     mode    => 0600,
+    owner   => "stack",
+    group   => "stack",
     content => template("glance/glance-registry.conf.erb"),
     require => Git_clone["glance"]
   }

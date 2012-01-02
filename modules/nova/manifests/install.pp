@@ -25,7 +25,7 @@ class nova::install {
     group   => "stack",
     mode    => 0660,
     content => template("nova/nova.conf.erb"),
-    require => Git_clone["nova-client"]
+    require => Git_clone["nova"]
   }
 
 

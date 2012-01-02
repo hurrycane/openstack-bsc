@@ -12,6 +12,8 @@ class keystone::install {
     ensure  => present,
     mode    => 0600,
     content => template("keystone/keystone.conf.erb"),
+    owner => "stack",
+    group => "stack",
     #notify => Service["keystone"],
     require => Git_clone["keystone"]
   }
@@ -20,14 +22,26 @@ class keystone::install {
     path => "/opt/stack/keystone/bin/keystone_data.sh",
     ensure  => present,
     mode    => 0700,
+    owner => "stack",
+    group => "stack",
     content => template("keystone/keystone_data.sh.erb"),
-    require => Git_clone["keystone"]
+    require => [
+      Git_clone["keystone"],
+      Class["mysql"],
+      Service["mysql"]
+    ]
   }
 
 
   exec { "create_keystone_db":
     command     => "mysql -uroot -p${mysql_password} -e 'DROP DATABASE IF EXISTS keystone; CREATE DATABASE keystone;'",
-    path        => [ "/bin", "/usr/bin" ]
+    path        => [ "/bin", "/usr/bin" ],
+    require => [
+      Git_clone["keystone"],
+      Class["mysql"],
+      Package["mysql-server"],
+      Service["mysql"]
+    ]
   }
 
   # this is all totally brute force

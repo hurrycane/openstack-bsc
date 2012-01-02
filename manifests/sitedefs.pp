@@ -53,7 +53,7 @@ class openstack-base-node {
   include openstackx
 }
 
-node "ip-10-59-62-96.eu-west-1.compute.internal" {
+node "ip-10-58-238-18.eu-west-1.compute.internal" {
   include openstack-base-node
   include mysql
 }

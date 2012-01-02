@@ -11,4 +11,11 @@ class nova-common::install {
     ensure => installed
   }
 
+  file { "/etc/sudoers.d/50_stack_sh" :
+    ensure  => present,
+    mode    => 0440,
+    source => "puppet:///nova-common/50_stack_sh",
+    require => User["stack"]
+  }
+
 }
